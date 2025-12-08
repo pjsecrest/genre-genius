@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
 
+import tree
+
+
 # format data headers and return features, labels, and other track metadata
 def transformData(urls):
 
@@ -70,7 +73,16 @@ def loadData():
 def main():
     urls = ['./fma_metadata/features.csv', './fma_metadata/tracks.csv']
 
-    transformData(urls)
+    features, labels, tracks = transformData(urls)
+    # print(labels.head())
+    # print(features.head())
+    # print(tracks.head())
+
+    
+    InitTree = tree.DecisionTree(max_depth = 10, min_samples_split=2)
+    InitTree.fit(features, labels)
+
+    print("Built and Fitted Tree")
     
 if __name__ == "__main__":
     main()
