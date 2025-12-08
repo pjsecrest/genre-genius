@@ -49,6 +49,7 @@ def gini(y):
     # Workspace 1.2
     # TODO: Compute the gini impurity of the labels
     #BEGIN
+    print(y)
     labels, counts = np.unique(y, return_counts=True)
     gini = 1 - np.sum([(count / len(y))**2 for count in counts])
     #END
@@ -65,8 +66,8 @@ def impurity_reduction(y, left_indices, right_indices):
     reduction = 0
     # Workspace 1.4
     #BEGIN
-    left_split = y[left_indices]
-    right_split = y[right_indices]
+    left_split = y.iloc[left_indices]
+    right_split = y.iloc[right_indices]
     reduction = gini(y) - ((len(left_split) / len(y) * gini(left_split)) + (len(right_split) / len(y) * gini(right_split)))
     #END
     return reduction
@@ -101,11 +102,12 @@ def best_split(X, y):
     # NOTE: See specification in Q1.6:
     #       if feature_value == threshold, it should end up in the **left** child.
     for feature_id in range(X.shape[1]):
-        for threshold in split_values(X[:, feature_id]):
+        print(f" ---------- feature: {feature_id} ----------")
+        for threshold in split_values(X.iloc[:, feature_id]):
         #BEGIN
 
-            left_split_indices = np.where(X[:, feature_id] < threshold)[0]
-            right_split_indices = np.where(X[:, feature_id] >= threshold)[0]
+            left_split_indices = np.where(X.iloc[:, feature_id] < threshold)[0]
+            right_split_indices = np.where(X.iloc[:, feature_id] >= threshold)[0]
 
             if len(left_split_indices) == 0 or len(right_split_indices) == 0:
                 continue 
@@ -153,7 +155,7 @@ class DecisionNode:
         return y_pred
     
 
-    def build_tree(X, y, depth=-1, min_samples_split=2):
+def build_tree(X, y, depth=-1, min_samples_split=2):
         if depth == 0 or len(y) < min_samples_split:
             # we reached the maximum depth or we don't have more than the minimum number of samples in the leaf
             tree = LeafNode(y)
@@ -189,6 +191,7 @@ class DecisionTree:
         self.min_samples_split = min_samples_split
         self.tree = None
         self.num_features = None
+
 
     def fit(self, X, y):
         """
