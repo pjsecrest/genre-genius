@@ -98,10 +98,7 @@ def loadData(features, labels, tracks):
     y_val = y[val_idx]
     y_test = y[test_idx]
     
-    print(f'X_train: \n {X_train.head()}')
-    print(f'y_train: \n {y_train.head()}')
-
-
+    return X_train, X_val, X_test, y_train, y_val, y_test
     
 def main():
     urls = ['./fma_metadata/features.csv', './fma_metadata/tracks.csv']
@@ -112,7 +109,7 @@ def main():
     # print(labels.head())
     # print(tracks.head())
     
-    loadData(features, labels, tracks)
+    X_train, X_val, X_test, y_train, y_val, y_test = loadData(features, labels, tracks)
 
     # print(labels.head())
     # print(features.head())
