@@ -116,10 +116,15 @@ def main():
     # print(tracks.head())
 
     
-    InitTree = tree.DecisionTree(max_depth = 10, min_samples_split=2)
-    InitTree.fit(features, labels)
+    InitTree = tree.DecisionTree(max_depth = 2, min_samples_split=2)
+    InitTree.fit(X_train, y_train)
 
     print("Built and Fitted Tree")
+
+    print( f"Score on predictions:  {InitTree.score(X_test.to_numpy(), y_test.to_numpy())}")
+    
+    
+
     
 if __name__ == "__main__":
     main()
