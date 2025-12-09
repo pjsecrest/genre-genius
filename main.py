@@ -1,8 +1,11 @@
 import numpy as np
 import pandas as pd
-
 import tree
+from random_forest import RandomForest
 
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import confusion_matrix
 
 # format data headers and return features, labels, and other track metadata
 def transformData(urls):
@@ -31,7 +34,6 @@ def transformData(urls):
                 feature_cols.append('_'.join(parts))
         else:
             feature_cols.append(col)
-            feature_cols = []
            
     track_cols = []
     for col in tracks.columns:
@@ -45,7 +47,6 @@ def transformData(urls):
                 track_cols.append('_'.join(parts))
         else:
             track_cols.append(col)
-            track_cols = []
             
     
     # set columns and reindex with track_id
@@ -100,31 +101,84 @@ def loadData(features, labels, tracks):
     
     return X_train, X_val, X_test, y_train, y_val, y_test
     
+# evaluate the predictions against truth labels
+def evaluatePredictions(y_pred, y_true, k=3):
+
+    f1 = 0
+    accuracy_score = np.mean(y_pred == y_true)
+    top_k_accuracy = 0
+    # confusion_matrix = None
+    
+    # confusion
+    
+    cm = confusion_matrix(y_true, y_pred)
+    print(cm)
+    
+    
+    # calc F1 
+    # tp, tn, fp, fn = 0, 0, 0, 0
+    
+    # tp = np.count_nonzero(y_pred == y_true)
+    # tn = np.count_nonzero()
+    
+    # precision = tp/(tp+fp)
+    # recall = tp/(tp+fn)
+    # f1 = (2*precision*recall)/(precision+recall)
+    # print(f'F1 Score: {f1}')
+    
+    return
+    
 def main():
     urls = ['./fma_metadata/features.csv', './fma_metadata/tracks.csv']
     
-    features, labels, tracks = features, labels, tracks = transformData(urls) 
-
-    # print(features.head())
-    # print(labels.head())
-    # print(tracks.head())
-    
+    features, labels, tracks = features, labels, tracks = transformData(urls)
     X_train, X_val, X_test, y_train, y_val, y_test = loadData(features, labels, tracks)
-
-    # print(labels.head())
-    # print(features.head())
-    # print(tracks.head())
-
-    
-    InitTree = tree.DecisionTree(max_depth = 2, min_samples_split=2)
-    InitTree.fit(X_train, y_train)
-
-    print("Built and Fitted Tree")
-
-    print( f"Score on predictions:  {InitTree.score(X_test.to_numpy(), y_test.to_numpy())}")
     
     
+    # InitTree = tree.DecisionTree(max_depth = 2, min_samples_split=2)
+    # InitTree.fit(X_train, y_train)
 
+    # print("Built and Fitted Tree")
+
+    # print( f"Score on predictions (Tree):  {InitTree.score(X_test.to_numpy(), y_test.to_numpy())}")
+    # X_train = X_train.head(10).to_numpy()
+    # y_train = y_train.head(10).to_numpy()
+    # X_test = X_test.head(10).to_numpy()
     
+    combined = pd.concat([X_train, y_train], axis=1)
+    combined = combined.dropna()
+    
+    y_train = combined.iloc[:, -1]
+    X_train = combined.iloc[:, :-1]
+    
+    combined_test = pd.concat([X_train, y_train], axis=1)
+    combined_test = combined.dropna()
+    
+    y_test = combined_test.iloc[:, -1]
+    X_test = combined_test.iloc[:, :-1]
+    
+    X_train = X_train.to_numpy()
+    X_test = X_test.to_numpy()
+    y_train = y_train.to_numpy()
+    y_test = y_test.to_numpy()
+    
+    # TODO: add eval stats(F1, confusion matrix? will be massive, top K accuracy (predicting top k genres rather than top 1))
+    # TODO: hyperparameter tuning, must find optimal: n_estimators, sample_ratio, features_ratio, max_depth, max_features
+
+    rf = RandomForest(1)
+    
+    
+    
+    rf.fit(X_train, y_train)
+    rf_predictions = rf.predict(X_test)
+    
+    print(rf_predictions.shape)
+    print(y_test.shape)
+    
+    # RF evaluation
+    evaluatePredictions(rf_predictions, y_test)
+    print(f'Random Forest Predictions (top 1): {rf_predictions}')
+    
+
 if __name__ == "__main__":
     main()
