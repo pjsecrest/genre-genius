@@ -1,0 +1,11 @@
+Multi LBG F1 (all labels): 0.28651209713740117
+Multi LBG Score (all labels): 0.030720056823226493
+
+Single LR F1 (16 label): 0.6866534812107253
+Single LR Score (16 label): 0.6866534812107253
+
+Single RF F1 (16 label): 0.9911624064291615
+Single RF Score (16 label): 0.9911624064291615
+
+Single LGB F1 (16 label): 0.9539093207821145
+Single LGB Score (16 label): 0.9539093207821145

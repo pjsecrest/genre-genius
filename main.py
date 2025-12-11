@@ -171,12 +171,12 @@ def main():
     # print(f"Number of unique classes in test: {y_test.nunique()}")
  
     # Drop NaN values
-    # combined = pd.concat([X_train, y_train], axis=1)
+    # combined = pd.concat([X_train, y_train_top], axis=1)
     # combined = combined.dropna()
     # y_train = combined.iloc[:, -1]
     # X_train = combined.iloc[:, :-1]
     
-    # combined_test = pd.concat([X_train, y_train], axis=1)
+    # combined_test = pd.concat([X_test, y_test_top], axis=1)
     # combined_test = combined.dropna()
     # y_test = combined_test.iloc[:, -1]
     # X_test = combined_test.iloc[:, :-1]
@@ -184,6 +184,10 @@ def main():
     # convert to np arrays for use in models
     X_train = X_train.to_numpy()
     X_test = X_test.to_numpy()
+    
+    # y_train_top = y_train.to_numpy()
+    # y_test_top = y_test.to_numpy()
+    
     y_train_multi = y_train_multi.to_numpy()
     y_val_multi = y_val_multi.to_numpy()
     y_test_multi = y_test_multi.to_numpy()
@@ -196,98 +200,62 @@ def main():
     # TODO: hyperparameter tuning, must find optimal: n_estimators, sample_ratio, features_ratio, max_depth, max_features
 
     # Initialize and fit models, then predict
-    rf_classifier = RandomForestClassifier(n_estimators=25)
     lr_classifier = LogisticRegression(max_iter=5000, C=0.1)
-    lgb_classifier = LGBMClassifier(
-        boosting_type='gbdt',
-        num_leaves=50,
-        learning_rate=0.1,
-        n_estimators=100,
-        n_jobs=-1
-    )
+    # rf_classifier = RandomForestClassifier(n_estimators=5)
+    # lgb_classifier = LGBMClassifier(
+    #     boosting_type='gbdt',
+    #     num_leaves=50,
+    #     learning_rate=0.1,
+    #     n_estimators=100,
+    #     n_jobs=-1
+    # )
     
     multi_out_classifier_lr = OneVsRestClassifier(lr_classifier)
-    multi_out_classifier_rf = OneVsRestClassifier(rf_classifier)
-    multi_out_classifier_lgb = OneVsRestClassifier(lgb_classifier, n_jobs=-1)
+    # multi_out_classifier_rf = OneVsRestClassifier(rf_classifier)
+    # multi_out_classifier_lgb = OneVsRestClassifier(lgb_classifier, n_jobs=-1)
+    # multi_out_classifier_lgb.fit(X_train_scaled, y_test)
 
-        
-    # multi_out_classifier_lr.fit(X_train_scaled, y_train_multi)
-    # multi_out_classifier_rf.fit(X_train_scaled, y_train_multi)
-    multi_out_classifier_lgb.fit(X_train_scaled, y_train_multi)
+    multi_out_classifier_lr.fit(X_train_scaled, y_train_multi)
+    multi_lr_prediction = multi_out_classifier_lr.predict(X_test_scaled)
     
-    # multi_lr_prediction = multi_out_classifier_lr.predict(X_test_scaled)
+    # lr_classifier.fit(X_train_scaled, y_train_top)
+    # single_lr_prediction = lr_classifier.predict(X_test_scaled)
     # multi_rf_prediction = multi_out_classifier_rf.predict(X_test_scaled)
-    lgb_prediction = multi_out_classifier_lgb.predict(X_test_scaled)
+    # lgb_prediction = multi_out_classifier_lgb.predict(X_test_scaled)
 
     # evaluations
-    # multi_lr_f1 = f1_score(y_test_multi, multi_lr_prediction, average='micro')
-    # multi_lr_score = accuracy_score(y_test_multi, multi_lr_prediction)
+    multi_lr_f1 = f1_score(y_test_multi, multi_lr_prediction, average='macro') # TODO change to macro
+    multi_lr_score = accuracy_score(y_test_multi, multi_lr_prediction)
     
-    # multi_rf_f1 = f1_score(y_test_multi, multi_rf_prediction, average='micro')
+    # single_lr_f1 = f1_score(y_test_top, single_lr_prediction, average='macro') # TODO change to macro
+    # single_lr_score = accuracy_score(y_test_top, single_lr_prediction)
+
+    
+    # multi_rf_f1 = f1_score(y_test_multi, multi_rf_prediction, average='macro')
     # multi_rf_score = accuracy_score(y_test_multi, multi_rf_prediction)
     
-    lgb_f1 = f1_score(y_test_multi, lgb_prediction, average='micro')
-    lgb_score = accuracy_score(y_test_multi, lgb_prediction)
+    # lgb_f1 = f1_score(y_test, lgb_prediction, average='micro')
+    # lgb_score = accuracy_score(y_test, lgb_prediction)
     
-    print(f'Multi LGB predictions: {lgb_prediction}')
-    print(f'Multi XBG F1: {lgb_f1}')
-    print(f'Multi XBG Score: {lgb_score}')
+    # print(f'Multi LGB predictions (16 label): {lgb_prediction}')
+    # print(f'Multi XBG F1 (16 label): {lgb_f1}')
+    # print(f'Multi XBG Score (16 label): {lgb_score}')
     
-    np.savetxt('./predictions/xgb_multi_predictions.csv', lgb_prediction)
+    print(f'Multi LR predictions: {multi_lr_prediction}')
+    print(f'Multi LR F1: {multi_lr_f1}')
+    print(f'Multi LR Score: {multi_lr_score}')
     
-    # print(f'Multi LR predictions: {multi_lr_prediction}')
-    # print(f'Multi LR F1: {multi_lr_f1}')
-    # print(f'Multi LR Score: {multi_lr_score}')
+    # print(f'Single LR predictions: {single_lr_prediction}')
+    # print(f'Single LR F1: {single_lr_f1}')
+    # print(f'Single LR Score: {single_lr_score}')
     
     # print(f'Multi RF predictions: {multi_rf_prediction}')
-    # print(f'Multi RF F1: {multi_rf_f1}')
-    # print(f'Multi RF Score: {multi_rf_score}')
+    # print(f'Multi RF F1 (16 label): {multi_rf_f1}')
+    # print(f'Multi RF Score (16 label): {multi_rf_score}')
     
     # np.savetxt('./predictions/rf_predictions_n25.csv', multi_rf_prediction)
     # np.savetxt('./predictions/lr_predictions.csv', multi_lr_prediction)    
-    '''
-    # Check which classes appear in test but model never predicts
-    # unique_predictions = np.unique(rf_predictions)
-    # unique_true = np.unique(y_test_multi)
-    # print(f"\nModel predicts {len(unique_predictions)} unique classes")
-    # print(f"Test set contains {len(unique_true)} unique classes")
-    # print(f"Classes in test but never predicted: {len(set(unique_true) - set(unique_predictions))}")
-    
-    # # EVALUATION
-    # score = accuracy_score(y_test, rf_predictions)
-    # rf_f1 = f1_score(y_test, rf_predictions, average='macro')
-    # rf_cm = confusion_matrix(y_test, rf_predictions)
-    
-    # dt_score = dt.score(X_test, y_test)
-    # dt_f1 = f1_score(y_test, dt_predictions, average='macro')
-    # dt_cm = confusion_matrix(y_test, dt_predictions)
-    
-    # Print Results
-    # np.savetxt('rf_cm.csv', rf_cm, delimiter=',')
-    # print(f'SKLearn Random Forest Score (top 1): {score}')
-    # print(f'SKLearn Random Forest F1 Score (top 1): {rf_f1}')
-    
-    # print(f'Decision Tree Classifier Score (top 1): {dt_score}')
-    # print(f'Decision Tree Classifier F1 Score (top 1): {dt_f1}')
-    
-    # # DISPLAY CONFUSION MATRIXES
-    # # class_names = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 25, 26, 27, 30, 31, 32, 33, 36, 37, 38, 41, 42, 43, 45, 46, 47, 49, 53, 58, 63, 64, 65, 66, 70, 71, 74, 76, 77, 79, 81, 83, 85, 86, 88, 89, 90, 92, 94, 97, 98, 100, 101, 102, 103, 107, 109, 111, 113, 117, 118, 125, 130, 137, 138, 166, 167, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 214, 224, 232, 236, 240, 247, 250, 267, 286, 296, 297, 311, 314, 322, 337, 359, 360, 361, 362, 374, 377, 378, 400, 401, 404, 428, 439, 440, 441, 442, 443, 444, 456, 465, 468, 491, 493, 495, 502, 504, 514, 524, 538, 539, 542, 567, 580, 602, 619, 651, 659, 693, 695, 741, 763, 808, 810, 811, 906, 1032, 1060, 1156, 1193, 1235]
-    # dt_cm_df = pd.DataFrame(dt_cm)
-    # rf_cm_df = pd.DataFrame(rf_cm)
-    
-    # fig, axes = plt.subplots(1, 2, figsize=(14, 6))
-    
-    # sns.heatmap(rf_cm_df, annot=True, fmt='d', cmap='Blues', cbar=False, ax=axes[0])
-    # axes[0].set_title('Random Forest Confusion Matrix')
-    # axes[0].set_xlabel('Predicted Label')
-    # axes[0].set_ylabel('True Label')
-    # # Decision Tree Confusion Matrix
-    # sns.heatmap(dt_cm_df, annot=True, fmt='d', cmap='Blues', cbar=False, ax=axes[1])
-    # axes[1].set_title('Decision Tree Confusion Matrix')
-    # axes[1].set_xlabel('Predicted Label')
-    # axes[1].set_ylabel('True Label')
-    '''
-    
+    # np.savetxt('./predictions/xgb_multi_predictions.csv', lgb_prediction)
 
 if __name__ == "__main__":
     main()
